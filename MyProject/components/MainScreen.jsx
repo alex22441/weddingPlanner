@@ -1,9 +1,13 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 
 const MainScreen = ({ navigation }) => {
   return (
-    <View style={styles.container}>
+    <ImageBackground 
+      source={require('../assets/background.jpg')} // Add your background image here
+      style={styles.container}
+      resizeMode='cover'
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Wedding Planner App</Text>
@@ -24,7 +28,7 @@ const MainScreen = ({ navigation }) => {
 
       {/* Footer */}
       {/* Optional footer section can be added here */}
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -33,6 +37,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    resizeMode: 'cover', // Adjust image resizeMode as needed
   },
   header: {
     alignItems: 'center',
@@ -41,6 +46,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: 'white', // Change header text color
   },
   content: {
     alignItems: 'center',
