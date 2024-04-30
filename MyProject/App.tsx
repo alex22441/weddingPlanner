@@ -1,8 +1,8 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import MainScreen from './components/MainScreen'; // Update the path as needed
-import RSVPListScreen from './screens/RSVPListScreen'; // Update the path as needed
+import MainScreen from './components/MainScreen'; // Corrected import path
+import RSVPListScreen from './screens/RSVPListScreen'; // Corrected import path
 
 const Stack = createStackNavigator();
 
