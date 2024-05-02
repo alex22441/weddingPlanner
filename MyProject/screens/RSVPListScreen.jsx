@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, Modal, TextInput } from 'react-native';
+import { View, Text, Button, Modal, TextInput } from 'react-native';
+import Table from './TableFunc'; // Import the Table component
+import styles from '../styles/styles';
 
 const RSVPListScreen = () => {
   const [isAddGuestModalVisible, setIsAddGuestModalVisible] = useState(false);
+  const [guests, setGuests] = useState([]);
   const [guestData, setGuestData] = useState({
     relation: '',
     familyName: '',
@@ -29,6 +32,23 @@ const RSVPListScreen = () => {
     });
   };
 
+  const handleSubmit = () => {
+    // Add the new guest to the list
+    setGuests([...guests, guestData]);
+    // Clear input fields or reset modal state if needed
+    setGuestData({
+      relation: '',
+      familyName: '',
+      name: '',
+      invitations: '',
+      priority: '',
+      rsvp: '',
+      invitationSent: '',
+      notes: '',
+    });
+    closeAddGuestModal();
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -38,8 +58,11 @@ const RSVPListScreen = () => {
 
       {/* Main Content */}
       <View style={styles.content}>
-        {/* List of Guests (to be implemented) */}
-        <Text>No guests yet</Text>
+        {/* Guest List Table */}
+        <Table guests={guests} />
+
+        {/* Show message if no guests */}
+        {guests.length === 0 && <Text>No guests yet</Text>}
       </View>
 
       {/* Button to Add Guest */}
@@ -52,83 +75,49 @@ const RSVPListScreen = () => {
           {/* Input fields for guest details */}
           <TextInput
             style={styles.input}
-            placeholder="Invited on behalf"
-            value={guestData.Relation}
-            onChangeText={(text) => handleInputChange('Relation', text)}
-          />
-          <TextInput
-            style={styles.input}
             placeholder="Family Name"
-            value={guestData.FamilyName}
-            onChangeText={(text) => handleInputChange('FamilyName', text)}
+            value={guestData.familyName}
+            onChangeText={(text) => handleInputChange('familyName', text)}
           />
           <TextInput
             style={styles.input}
             placeholder="Name"
-            value={guestData.FirstName}
-            onChangeText={(text) => handleInputChange('FirstName', text)}
+            value={guestData.name}
+            onChangeText={(text) => handleInputChange('name', text)}
           />
           <TextInput
             style={styles.input}
-            placeholder="No. atendees"
-            value={guestData.NoOfInvitation}
-            onChangeText={(text) => handleInputChange('NoOfInvitation', text)}
+            placeholder="RSVP Status"
+            value={guestData.rsvp}
+            onChangeText={(text) => handleInputChange('rsvp', text)}
           />
           <TextInput
             style={styles.input}
-            placeholder="RSVP"
-            value={guestData.RSVP}
-            onChangeText={(text) => handleInputChange('RSVP', text)}
+            placeholder="Relation"
+            value={guestData.relation}
+            onChangeText={(text) => handleInputChange('relation', text)}
           />
           <TextInput
             style={styles.input}
-            placeholder="Invitation Date"
-            value={guestData.InvitationDate}
-            onChangeText={(text) => handleInputChange('InvitationDate', text)}
+            placeholder="Priority"
+            value={guestData.priority}
+            onChangeText={(text) => handleInputChange('priority', text)}
           />
-          {/* Add input fields for other guest details */}
-          {/* Add submit button */}
-          <Button title="Submit" onPress={closeAddGuestModal} />
-          <Button title="Close" onPress={closeAddGuestModal} />
+          <TextInput
+            style={styles.input}
+            placeholder="Notes"
+            value={guestData.notes}
+            onChangeText={(text) => handleInputChange('notes', text)}
+          />
+          {/* Add submit and close buttons */}
+          <View style={styles.buttonContainer}>
+            <Button title="Submit" onPress={handleSubmit} />
+            <Button title="Close" onPress={closeAddGuestModal} />
+          </View>
         </View>
       </Modal>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 50,
-  },
-  input: {
-    height: 40,
-    width: 200,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-});
 
 export default RSVPListScreen;

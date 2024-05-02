@@ -1,13 +1,22 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Image } from 'react-native';
+import styles from '../styles/styles';
 
 const MainScreen = ({ navigation }) => {
   return (
     <ImageBackground 
-      source={require('../assets/background.jpg')} // Add your background image here
+      source={require('../assets/background.jpg')}
       style={styles.container}
-      resizeMode='cover'
+      resizeMode="cover"
     >
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <Image 
+        //  source={require('../assets/favicon.png')}
+          style={styles.logo}
+        />
+      </View>
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Wedding Planner App</Text>
@@ -27,40 +36,12 @@ const MainScreen = ({ navigation }) => {
       </View>
 
       {/* Footer */}
-      {/* Optional footer section can be added here */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>© 2024 Wedding Planner App</Text>
+        {/* Additional footer content can be added here */}
+      </View>
     </ImageBackground>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    resizeMode: 'cover', // Adjust image resizeMode as needed
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white', // Change header text color
-  },
-  content: {
-    alignItems: 'center',
-  },
-  button: {
-    backgroundColor: 'blue',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-  },
-});
 
 export default MainScreen;
