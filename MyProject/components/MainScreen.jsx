@@ -1,22 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Image } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import styles from '../styles/styles';
 
 const MainScreen = ({ navigation }) => {
   return (
-    <ImageBackground 
-      source={require('../assets/background.jpg')}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      {/* Logo */}
-      <View style={styles.logoContainer}>
-        <Image 
-        //  source={require('../assets/favicon.png')}
-          style={styles.logo}
-        />
-      </View>
-
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Wedding Planner App</Text>
@@ -40,7 +28,7 @@ const MainScreen = ({ navigation }) => {
         <Text style={styles.footerText}>© 2024 Wedding Planner App</Text>
         {/* Additional footer content can be added here */}
       </View>
-    </ImageBackground>
+    </View>
   );
 };
 
