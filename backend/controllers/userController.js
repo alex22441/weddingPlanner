@@ -1,129 +1,60 @@
-// controllers/userController.js
-const User = require('../models/User');
+// backend/controllers/userController.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid'); // For generating RSVP codes
-
-// Register User (Couple/Admin)
+const User = require('../models/User'); // Ensure this line is importing your User model
+// Register User
 exports.registerUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
-
   try {
-    // Validate role
-    if (!['couple', 'admin'].includes(role)) {
-      return res.status(400).json({ msg: 'Invalid role specified' });
-    }
+    const { name, email, password, role } = req.body;
 
-    // Check if user already exists
+    // Check if the user already exists
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ msg: 'User already exists' });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate unique RSVP code for guests (if role is guest in future)
-    const rsvpCode = role === 'guest' ? uuidv4() : undefined;
-
-    // Create new user
+    // Create a new user with passwordHash
     user = new User({
       name,
       email,
-      passwordHash,
-      role,
-      rsvpCode,
+      passwordHash: hashedPassword, // Updated to match the schema field
+      role
     });
 
     await user.save();
-
-    // Create JWT payload
-    const payload = {
-      user: {
-        id: user.id,
-        role: user.role,
-      },
-    };
-
-    // Sign JWT
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
 // Login User
 exports.loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    // Check if user exists
+    const { email, password } = req.body;
+
+    // Check if the user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ msg: 'Invalid Credentials' });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    // Compare the password with passwordHash
+    const isMatch = await bcrypt.compare(password, user.passwordHash); // Updated to use passwordHash
     if (!isMatch) {
-      return res.status(400).json({ msg: 'Invalid Credentials' });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Create JWT payload
-    const payload = {
-      user: {
-        id: user.id,
-        role: user.role,
-      },
-    };
+    // Generate JWT
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Sign JWT
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-};
-
-// RSVP Guest
-exports.rsvpGuest = async (req, res) => {
-  const { rsvpCode, rsvpStatus, mealPreference, seatingAssignment } = req.body;
-
-  try {
-    // Find guest by rsvpCode
-    const guest = await User.findOne({ rsvpCode, role: 'guest' });
-    if (!guest) {
-      return res.status(400).json({ msg: 'Invalid RSVP Code' });
-    }
-
-    // Update RSVP status and preferences
-    guest.rsvpStatus = rsvpStatus || guest.rsvpStatus;
-    guest.mealPreference = mealPreference || guest.mealPreference;
-    guest.seatingAssignment = seatingAssignment || guest.seatingAssignment;
-
-    await guest.save();
-
-    res.json({ msg: 'RSVP updated successfully' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(200).json({ token });
+  } catch (error) {
+    console.error('Error logging in user:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };

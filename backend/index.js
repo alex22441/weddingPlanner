@@ -1,46 +1,50 @@
-// index.js
+const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const express = require('express');
 const cors = require('cors');
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(express.json());
-app.use(cors({
-  origin: 'http://localhost:3000', // Adjust based on frontend location
-  credentials: true,
-}));
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('MongoDB connected'))
-.catch((err) => console.log('MongoDB connection error:', err));
-
-// Routes
+// Import all routes
 const userRoutes = require('./routes/userRoutes');
-const eventRoutes = require('./routes/eventRoutes');
 const guestRoutes = require('./routes/guestRoutes');
+const eventRoutes = require('./routes/eventRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
 const guestbookRoutes = require('./routes/guestbookRoutes');
 
+// Middleware to parse JSON
+app.use(express.json());
+
+// Use CORS middleware
+app.use(cors());
+
+// MongoDB connection
+const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/weddingApp';
+mongoose
+  .connect(mongoURI)
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch((err) => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1); // Exit process if connection fails
+  });
+
+// User Routes
 app.use('/api/users', userRoutes);
-app.use('/api', eventRoutes);
-app.use('/api', guestRoutes);
+
+// Guest Routes
+app.use('/api/guests', guestRoutes);
+
+// Event Routes (assuming eventRoutes exist)
+app.use('/api/events', eventRoutes);
+
+// Media Routes (assuming mediaRoutes exist)
 app.use('/api', mediaRoutes);
-app.use('/api', guestbookRoutes);
 
-// Basic Route
-app.get('/', (req, res) => {
-  res.send('Welcome to the Wedding App Backend!');
-});
+// Guestbook Routes (assuming guestbookRoutes exist)
+app.use('/api/guestbook', guestbookRoutes);
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

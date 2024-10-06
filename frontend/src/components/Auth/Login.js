@@ -21,7 +21,7 @@ const Login = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await axios.post('http://192.168.1.218:8080/api/users/login', values);
+      const response = await axios.post('http://localhost:5000/api/users/login', values);
       dispatch(login(response.data.token));
       navigate('/dashboard'); // Updated navigation method
     } catch (err) {

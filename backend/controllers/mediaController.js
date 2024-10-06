@@ -65,10 +65,10 @@ exports.uploadMedia = (req, res) => {
 // Get All Media
 exports.getAllMedia = async (req, res) => {
   try {
-    const media = await Media.find().populate('guestId', 'name').select('-__v').lean();
-    res.json(media);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    const media = await Media.find(); // Adjust query if needed
+    res.status(200).json(media);
+  } catch (error) {
+    console.error('Error fetching media:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };

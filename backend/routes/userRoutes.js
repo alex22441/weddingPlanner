@@ -1,16 +1,12 @@
-// routes/userRoutes.js
+// backend/routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/userController');
-const auth = require('../middleware/auth');
+const { registerUser, loginUser } = require('../controllers/userController');
 
-// Register a new user (couple or admin)
-router.post('/register', userController.registerUser);
+// Register Route
+router.post('/register', registerUser);
 
-// Login user
-router.post('/login', userController.loginUser);
-
-// Guest RSVP via code (no authentication required)
-router.post('/rsvp', userController.rsvpGuest);
+// Login Route
+router.post('/login', loginUser);
 
 module.exports = router;
