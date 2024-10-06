@@ -1,82 +1,75 @@
 // src/components/Media/MediaGallery.js
-import React, { useEffect, useState } from 'react';
-import API from '../../services/api';
-import {
-  Container,
-  Typography,
-  Box,
-  CircularProgress,
-  Grid,
-  Card,
-  CardMedia,
-  Alert,
-} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Grid, Typography, Box, Card, CardMedia, CardContent, CardActions, IconButton } from '@mui/material';
+import { Delete } from '@mui/icons-material';
+import api from '../../services/api';
 
 const MediaGallery = () => {
-  const [mediaItems, setMediaItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [media, setMedia] = useState([]);
 
   useEffect(() => {
-    const fetchMedia = async () => {
-      try {
-        const response = await API.get('/media');
-        setMediaItems(response.data);
-      } catch (err) {
-        setError('Failed to fetch media.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMedia();
   }, []);
 
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 8, textAlign: 'center' }}>
-        <CircularProgress />
-      </Container>
-    );
-  }
+  const fetchMedia = async () => {
+    try {
+      const response = await api.get('/media');
+      setMedia(response.data);
+    } catch (error) {
+      console.error('Error fetching media:', error);
+    }
+  };
 
-  if (error) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 8 }}>
-        <Alert severity="error">{error}</Alert>
-      </Container>
-    );
-  }
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this media?')) {
+      try {
+        await api.delete(`/media/${id}`);
+        fetchMedia();
+      } catch (error) {
+        console.error('Error deleting media:', error);
+      }
+    }
+  };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 8 }}>
-      <Typography variant="h4" gutterBottom>
-        Media Gallery
-      </Typography>
-      <Grid container spacing={2}>
-        {mediaItems.map((item) => (
-          <Grid item xs={12} sm={6} md={4} key={item._id}>
+    <Box>
+      <Typography variant="h5">Media Gallery</Typography>
+      <Grid container spacing={2} mt={2}>
+        {media.map((item) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={item._id}>
             <Card>
-              {item.type === 'photo' ? (
+              {item.type.startsWith('image') ? (
                 <CardMedia
                   component="img"
-                  height="200"
-                  image={`http://localhost:5000/${item.url}`} // Adjust URL as per backend setup
-                  alt="Guest Media"
+                  height="140"
+                  image={item.url}
+                  alt={item.name}
                 />
               ) : (
                 <CardMedia
                   component="video"
-                  height="200"
+                  height="140"
                   controls
-                  src={`http://localhost:5000/${item.url}`} // Adjust URL as per backend setup
-                />
+                >
+                  <source src={item.url} type={item.type} />
+                  Your browser does not support the video tag.
+                </CardMedia>
               )}
+              <CardContent>
+                <Typography variant="body2" color="text.secondary">
+                  {item.name}
+                </Typography>
+              </CardContent>
+              <CardActions disableSpacing>
+                <IconButton aria-label="delete" onClick={() => handleDelete(item._id)}>
+                  <Delete />
+                </IconButton>
+              </CardActions>
             </Card>
           </Grid>
         ))}
       </Grid>
-    </Container>
+    </Box>
   );
 };
 

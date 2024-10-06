@@ -1,44 +1,41 @@
 // src/components/Navbar.js
-import React, { useContext } from 'react';
+import React from 'react';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom'; // Updated import
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../store/authSlice';
 
 const Navbar = () => {
-  const { user, logoutUser } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Updated hook
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const handleLogout = () => {
-    logoutUser();
-    navigate('/login');
+    dispatch(logout());
+    navigate('/login'); // Updated navigation method
   };
 
   return (
     <AppBar position="static">
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography
+          variant="h6"
+          component={Link}
+          to="/"
+          sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}
+        >
           Wedding App
         </Typography>
-        <Button color="inherit" component={Link} to="/">
-          Event
-        </Button>
-        {user && (
+        {isAuthenticated ? (
           <>
-            <Button color="inherit" component={Link} to="/guests">
-              Guests
-            </Button>
-            <Button color="inherit" component={Link} to="/media">
-              Media
-            </Button>
-            <Button color="inherit" component={Link} to="/guestbook">
-              Guestbook
+            <Button color="inherit" component={Link} to="/dashboard">
+              Dashboard
             </Button>
             <Button color="inherit" onClick={handleLogout}>
               Logout
             </Button>
           </>
-        )}
-        {!user && (
+        ) : (
           <>
             <Button color="inherit" component={Link} to="/login">
               Login

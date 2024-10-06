@@ -1,101 +1,70 @@
 // src/components/Media/MediaUpload.js
 import React, { useState } from 'react';
-import API from '../../services/api';
-import {
-  Container,
-  Typography,
-  Box,
-  TextField,
-  Button,
-  Alert,
-} from '@mui/material';
+import { TextField, Button, Checkbox, FormControlLabel, Typography, Box, LinearProgress } from '@mui/material';
+import api from '../../services/api';
 
 const MediaUpload = () => {
   const [file, setFile] = useState(null);
-  const [guestId, setGuestId] = useState('');
-  const [type, setType] = useState('photo');
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  const handleSubmit = async (e) => {
+  const handleUpload = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!file || !guestId) {
-      setError('Please provide all required fields.');
-      return;
-    }
+    if (!file) return;
 
     const formData = new FormData();
-    formData.append('media', file);
-    formData.append('guestId', guestId);
-    formData.append('type', type);
+    formData.append('file', file);
 
     try {
-      const response = await API.post('/upload', formData, {
+      setUploading(true);
+      const response = await api.post('/media/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setProgress(percentCompleted);
+        },
       });
-      setSuccess('Media uploaded successfully!');
-    } catch (err) {
-      if (err.response && err.response.data.msg) {
-        setError(err.response.data.msg);
-      } else {
-        setError('Failed to upload media.');
-      }
+      alert('File uploaded successfully!');
+      setFile(null);
+      setProgress(0);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file. Please try again.');
+      setProgress(0);
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Typography variant="h4" gutterBottom>
-        Upload Media
-      </Typography>
-      {success && <Alert severity="success">{success}</Alert>}
-      {error && <Alert severity="error">{error}</Alert>}
-      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-        <TextField
-          fullWidth
-          label="Guest ID"
-          value={guestId}
-          onChange={(e) => setGuestId(e.target.value)}
-          margin="normal"
-          required
-        />
-        <TextField
-          fullWidth
+    <Box>
+      <Typography variant="h5">Upload Media</Typography>
+      <form onSubmit={handleUpload}>
+        <input
+          accept="image/*,video/*"
+          style={{ display: 'none' }}
+          id="raised-button-file"
           type="file"
           onChange={handleFileChange}
-          margin="normal"
-          required
         />
-        <TextField
-          fullWidth
-          label="Type"
-          name="type"
-          select
-          SelectProps={{
-            native: true,
-          }}
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          margin="normal"
-          required
-        >
-          <option value="photo">Photo</option>
-          <option value="video">Video</option>
-        </TextField>
-        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+        <label htmlFor="raised-button-file">
+          <Button variant="contained" component="span" sx={{ mt: 2 }}>
+            Choose File
+          </Button>
+        </label>
+        {file && <Typography variant="body1" sx={{ mt: 1 }}>{file.name}</Typography>}
+        {uploading && <LinearProgress variant="determinate" value={progress} sx={{ mt: 2 }} />}
+        <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }} disabled={!file || uploading}>
           Upload
         </Button>
-      </Box>
-    </Container>
+      </form>
+    </Box>
   );
 };
 

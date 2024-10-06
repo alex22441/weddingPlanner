@@ -2,15 +2,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import { AuthProvider } from './contexts/AuthContext';
-import CssBaseline from '@mui/material/CssBaseline';
+import { Provider } from 'react-redux';
+import store from './store'; // Correctly import the Redux store
+import { AuthProvider } from './contexts/AuthContext'; // If still using Context API
 
 ReactDOM.render(
-  <React.StrictMode>
+  <Provider store={store}>
     <AuthProvider>
-      <CssBaseline />
       <App />
     </AuthProvider>
-  </React.StrictMode>,
+  </Provider>,
   document.getElementById('root')
 );

@@ -1,51 +1,35 @@
 // src/components/Auth/Register.js
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
-import API from '../../services/api';
-import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Alert,
-} from '@mui/material';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Updated import
+import { TextField, Button, Container, Typography, Box, Alert } from '@mui/material';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import axios from 'axios';
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'couple',
-  });
+  const navigate = useNavigate(); // Updated hook
   const [error, setError] = useState('');
-  const navigate = useNavigate();
-  const { loginUser } = useContext(AuthContext);
+  const [success, setSuccess] = useState('');
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const initialValues = { name: '', email: '', password: '' };
+  const validationSchema = Yup.object({
+    name: Yup.string().required('Required'),
+    email: Yup.string().email('Invalid email format').required('Required'),
+    password: Yup.string().min(6, 'Minimum 6 characters').required('Required'),
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      const response = await API.post('/users/register', formData);
-      // Assuming backend returns { token }
-      // To get user info, you might need to decode the token or have backend send user data
-      // For simplicity, we'll assume the backend sends user info with token
-      const token = response.data.token;
-      // Decode token to get user info (optional)
-      // Here, just storing token
-      loginUser({ token, user: null }); // Modify as per actual response
-      navigate('/');
+      await axios.post('http://192.168.1.218:8080/api/users/register', values);
+      setSuccess('Registration successful! Please log in.');
+      resetForm();
+      setTimeout(() => {
+        navigate('/login'); // Updated navigation method
+      }, 2000);
     } catch (err) {
-      if (err.response && err.response.data.msg) {
-        setError(err.response.data.msg);
-      } else {
-        setError('Registration failed. Please try again.');
-      }
+      console.error('Registration failed:', err.response.data);
+      setError('Registration failed. Please try again.');
+      setSubmitting(false);
     }
   };
 
@@ -55,41 +39,57 @@ const Register = () => {
         <Typography variant="h4" component="h1" gutterBottom>
           Register
         </Typography>
-        {error && <Alert severity="error">{error}</Alert>}
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          <TextField
-            fullWidth
-            label="Name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            margin="normal"
-            required
-          />
-          <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
-            Register
-          </Button>
-        </Box>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+        <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+          {({ isSubmitting }) => (
+            <Form>
+              <Field
+                as={TextField}
+                name="name"
+                type="text"
+                label="Name"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                helperText={<ErrorMessage name="name" />}
+                error={Boolean(<ErrorMessage name="name" />)}
+              />
+              <Field
+                as={TextField}
+                name="email"
+                type="email"
+                label="Email"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                helperText={<ErrorMessage name="email" />}
+                error={Boolean(<ErrorMessage name="email" />)}
+              />
+              <Field
+                as={TextField}
+                name="password"
+                type="password"
+                label="Password"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                helperText={<ErrorMessage name="password" />}
+                error={Boolean(<ErrorMessage name="password" />)}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+                sx={{ mt: 2 }}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Registering...' : 'Register'}
+              </Button>
+            </Form>
+          )}
+        </Formik>
       </Box>
     </Container>
   );

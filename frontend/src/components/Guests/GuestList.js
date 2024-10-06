@@ -1,87 +1,68 @@
 // src/components/Guests/GuestList.js
-import React, { useEffect, useState } from 'react';
-import API from '../../services/api';
-import {
-  Container,
-  Typography,
-  Box,
-  CircularProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Alert,
-} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { List, ListItem, ListItemText, IconButton, Typography, Box } from '@mui/material';
+import { Edit, Delete } from '@mui/icons-material';
+import api from '../../services/api';
+import Addguest from './Addguest';
 
 const GuestList = () => {
   const [guests, setGuests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [editingGuest, setEditingGuest] = useState(null);
 
   useEffect(() => {
-    const fetchGuests = async () => {
-      try {
-        const response = await API.get('/guests');
-        setGuests(response.data);
-      } catch (err) {
-        setError('Failed to fetch guests.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchGuests();
   }, []);
 
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 8, textAlign: 'center' }}>
-        <CircularProgress />
-      </Container>
-    );
-  }
+  const fetchGuests = async () => {
+    try {
+      const response = await api.get('/guests');
+      setGuests(response.data);
+    } catch (error) {
+      console.error('Error fetching guests:', error);
+    }
+  };
 
-  if (error) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 8 }}>
-        <Alert severity="error">{error}</Alert>
-      </Container>
-    );
-  }
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this guest?')) {
+      try {
+        await api.delete(`/guests/${id}`);
+        fetchGuests();
+      } catch (error) {
+        console.error('Error deleting guest:', error);
+      }
+    }
+  };
+
+  const handleEdit = (guest) => {
+    setEditingGuest(guest);
+  };
+
+  const handleUpdate = () => {
+    setEditingGuest(null);
+    fetchGuests();
+  };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 8 }}>
-      <Typography variant="h4" gutterBottom>
-        Guest List
-      </Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>RSVP Status</TableCell>
-              <TableCell>Meal Preference</TableCell>
-              <TableCell>Seating Assignment</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {guests.map((guest) => (
-              <TableRow key={guest._id}>
-                <TableCell>{guest.name}</TableCell>
-                <TableCell>{guest.email}</TableCell>
-                <TableCell>{guest.rsvpStatus}</TableCell>
-                <TableCell>{guest.mealPreference}</TableCell>
-                <TableCell>{guest.seatingAssignment}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Container>
+    <Box>
+      <Typography variant="h5">Guest List</Typography>
+      <List>
+        {guests.map((guest) => (
+          <ListItem key={guest._id} secondaryAction={
+            <>
+              <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(guest)}>
+                <Edit />
+              </IconButton>
+              <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(guest._id)}>
+                <Delete />
+              </IconButton>
+            </>
+          }>
+            <ListItemText primary={guest.name} secondary={guest.email} />
+          </ListItem>
+        ))}
+      </List>
+      <Addguest editingGuest={editingGuest} onUpdate={handleUpdate} />
+    </Box>
   );
 };
 

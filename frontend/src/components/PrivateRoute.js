@@ -1,12 +1,11 @@
 // src/components/PrivateRoute.js
-import React, { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthContext';
+import React from 'react';
+import { Navigate } from 'react-router-dom'; // Replaced Redirect with Navigate
+import { useSelector } from 'react-redux';
 
-const PrivateRoute = ({ children }) => {
-  const { authTokens } = useContext(AuthContext);
-
-  return authTokens ? children : <Navigate to="/login" />;
+const PrivateRoute = ({ children }) => { // Changed to accept children
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
 export default PrivateRoute;

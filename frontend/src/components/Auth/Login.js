@@ -1,46 +1,33 @@
 // src/components/Auth/Login.js
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
-import API from '../../services/api';
-import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Alert,
-} from '@mui/material';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Updated import
+import { useDispatch } from 'react-redux';
+import { login } from '../../store/authSlice';
+import { TextField, Button, Container, Typography, Box, Alert } from '@mui/material';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import axios from 'axios';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const navigate = useNavigate(); // Updated hook
+  const dispatch = useDispatch();
   const [error, setError] = useState('');
-  const navigate = useNavigate();
-  const { loginUser } = useContext(AuthContext);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const initialValues = { email: '', password: '' };
+  const validationSchema = Yup.object({
+    email: Yup.string().email('Invalid email format').required('Required'),
+    password: Yup.string().required('Required'),
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+  const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await API.post('/users/login', formData);
-      const token = response.data.token;
-      // Decode token to get user info (optional)
-      // Here, just storing token
-      loginUser({ token, user: null }); // Modify as per actual response
-      navigate('/');
+      const response = await axios.post('http://192.168.1.218:8080/api/users/login', values);
+      dispatch(login(response.data.token));
+      navigate('/dashboard'); // Updated navigation method
     } catch (err) {
-      if (err.response && err.response.data.msg) {
-        setError(err.response.data.msg);
-      } else {
-        setError('Login failed. Please try again.');
-      }
+      console.error('Login failed:', err.response.data);
+      setError('Login failed. Please check your credentials.');
+      setSubmitting(false);
     }
   };
 
@@ -50,32 +37,38 @@ const Login = () => {
         <Typography variant="h4" component="h1" gutterBottom>
           Login
         </Typography>
-        {error && <Alert severity="error">{error}</Alert>}
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          <TextField
-            fullWidth
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            margin="normal"
-            required
-          />
-          <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
-            Login
-          </Button>
-        </Box>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+          {({ isSubmitting }) => (
+            <Form>
+              <Field
+                as={TextField}
+                name="email"
+                type="email"
+                label="Email"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                helperText={<ErrorMessage name="email" />}
+                error={Boolean(<ErrorMessage name="email" />)}
+              />
+              <Field
+                as={TextField}
+                name="password"
+                type="password"
+                label="Password"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                helperText={<ErrorMessage name="password" />}
+                error={Boolean(<ErrorMessage name="password" />)}
+              />
+              <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }} disabled={isSubmitting}>
+                {isSubmitting ? 'Logging in...' : 'Login'}
+              </Button>
+            </Form>
+          )}
+        </Formik>
       </Box>
     </Container>
   );
