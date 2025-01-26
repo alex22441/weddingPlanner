@@ -1,12 +1,17 @@
-// backend/controllers/userController.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Ensure this line is importing your User model
+const User = require('../models/User');
+
 // Register User
 exports.registerUser = async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
+  const { name, email, password, role } = req.body;
 
+  // Validate required fields
+  if (!name || !email || !password || !role) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  try {
     // Check if the user already exists
     let user = await User.findOne({ email });
     if (user) {
@@ -20,7 +25,7 @@ exports.registerUser = async (req, res) => {
     user = new User({
       name,
       email,
-      passwordHash: hashedPassword, // Updated to match the schema field
+      password: hashedPassword,
       role
     });
 
@@ -34,9 +39,14 @@ exports.registerUser = async (req, res) => {
 
 // Login User
 exports.loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
+  // Validate required fields
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  try {
     // Check if the user exists
     const user = await User.findOne({ email });
     if (!user) {
@@ -44,7 +54,7 @@ exports.loginUser = async (req, res) => {
     }
 
     // Compare the password with passwordHash
-    const isMatch = await bcrypt.compare(password, user.passwordHash); // Updated to use passwordHash
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -55,6 +65,24 @@ exports.loginUser = async (req, res) => {
     res.status(200).json({ token });
   } catch (error) {
     console.error('Error logging in user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Refresh Token
+exports.refreshToken = async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ message: 'Token is required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
+    const newToken = jwt.sign({ userId: decoded.userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ token: newToken });
+  } catch (error) {
+    console.error('Error refreshing token:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

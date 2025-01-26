@@ -1,4 +1,3 @@
-// controllers/guestbookController.js
 const Guestbook = require('../models/Guestbook');
 const Guest = require('../models/Guest');
 
@@ -6,12 +5,12 @@ const Guest = require('../models/Guest');
 exports.addMessage = async (req, res) => {
   const { guestId, message } = req.body;
 
-  try {
-    // Validate guestId and message
-    if (!guestId || !message) {
-      return res.status(400).json({ msg: 'Guest ID and message are required' });
-    }
+  // Validate guestId and message
+  if (!guestId || !message) {
+    return res.status(400).json({ msg: 'Guest ID and message are required' });
+  }
 
+  try {
     // Check if guest exists
     const guest = await Guest.findById(guestId);
     if (!guest) {

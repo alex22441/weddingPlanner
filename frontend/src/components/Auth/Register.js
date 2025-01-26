@@ -1,7 +1,7 @@
 // src/components/Auth/Register.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Updated import
-import { TextField, Button, Container, Typography, Box, Alert } from '@mui/material';
+import { TextField, Button, Container, Typography, Box, Alert, MenuItem } from '@mui/material';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
@@ -11,16 +11,17 @@ const Register = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const initialValues = { name: '', email: '', password: '' };
+  const initialValues = { name: '', email: '', password: '', role: 'guest' };
   const validationSchema = Yup.object({
     name: Yup.string().required('Required'),
     email: Yup.string().email('Invalid email format').required('Required'),
     password: Yup.string().min(6, 'Minimum 6 characters').required('Required'),
+    role: Yup.string().required('Required'),
   });
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      await axios.post('http://localhost:5000/api/users/register', values);
+      await axios.post('http://192.168.0.217:5000/api/users/register', values);
       setSuccess('Registration successful! Please log in.');
       resetForm();
       setTimeout(() => {
@@ -77,6 +78,21 @@ const Register = () => {
                 helperText={<ErrorMessage name="password" />}
                 error={Boolean(<ErrorMessage name="password" />)}
               />
+              <Field
+                as={TextField}
+                name="role"
+                label="Role"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                select
+                helperText={<ErrorMessage name="role" />}
+                error={Boolean(<ErrorMessage name="role" />)}
+              >
+                <MenuItem value="couple">Couple</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="guest">Guest</MenuItem>
+              </Field>
               <Button
                 type="submit"
                 variant="contained"

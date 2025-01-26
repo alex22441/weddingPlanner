@@ -1,13 +1,11 @@
 // routes/guestbookRoutes.js
 const express = require('express');
+const { addMessage, getAllMessages } = require('../controllers/guestbookController');
+const { auth, roleCheck } = require('../middleware/auth');
+
 const router = express.Router();
-const guestbookController = require('../controllers/guestbookController');
-const auth = require('../middleware/auth');
 
-// Add a message to the guestbook (can be public or require authentication)
-router.post('/message', auth, guestbookController.addMessage);
-
-// Get all guestbook messages (public)
-router.get('/messages', guestbookController.getAllMessages);
+router.post('/', auth, roleCheck(['guest']), addMessage);
+router.get('/', auth, getAllMessages);
 
 module.exports = router;

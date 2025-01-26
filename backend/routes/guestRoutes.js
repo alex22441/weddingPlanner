@@ -1,20 +1,16 @@
 // routes/guestRoutes.js
 const express = require('express');
+const { getAllGuests, updateGuest, createGuest, deleteGuest, generateInviteLink, submitInviteForm } = require('../controllers/guestController');
+const { auth, roleCheck } = require('../middleware/auth');
+
 const router = express.Router();
-const guestController = require('../controllers/guestController');
-const auth = require('../middleware/auth');
 
-// Get all guests (protected: only couple/admin)
-router.get('/', auth, guestController.getAllGuests);
-
-// Add a new guest (protected: only couple/admin)
-router.post('/', auth, guestController.createGuest);
-
-// Update guest information (protected: only couple/admin)
-router.put('/:id', auth, guestController.updateGuest);
-
-// Delete a guest (protected: only couple/admin)
-router.delete('/:id', auth, guestController.deleteGuest);
+router.get('/', auth, roleCheck(['couple', 'admin']), getAllGuests);
+router.post('/', auth, roleCheck(['couple', 'admin']), createGuest);
+router.put('/:id', auth, roleCheck(['couple', 'admin']), updateGuest);
+router.delete('/:id', auth, roleCheck(['couple', 'admin']), deleteGuest);
+router.post('/generate-invite', auth, roleCheck(['admin']), generateInviteLink); // New route for generating invite link
+router.post('/submit-invite', submitInviteForm); // New route for submitting invite form
 
 module.exports = router;
 

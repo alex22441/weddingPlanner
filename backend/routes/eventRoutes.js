@@ -1,13 +1,10 @@
-// routes/eventRoutes.js
 const express = require('express');
+const { createOrUpdateEvent, getEvent } = require('../controllers/eventController');
+const { auth, roleCheck } = require('../middleware/auth');
+
 const router = express.Router();
-const eventController = require('../controllers/eventController');
-const auth = require('../middleware/auth');
 
-// Create or update event details (protected: only couple/admin)
-router.post('/event', auth, eventController.createOrUpdateEvent);
-
-// Get event details (public or protected based on your preference)
-router.get('/event', eventController.getEvent);
+router.post('/', auth, roleCheck(['couple', 'admin']), createOrUpdateEvent);
+router.get('/', auth, getEvent);
 
 module.exports = router;

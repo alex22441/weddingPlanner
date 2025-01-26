@@ -1,4 +1,3 @@
-// controllers/mediaController.js
 const Media = require('../models/Media');
 const multer = require('multer');
 const path = require('path');
@@ -26,38 +25,27 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 10000000 }, // 10MB limit
-}).single('media');
+const upload = multer({ storage, fileFilter }).single('file');
 
 // Upload Media
 exports.uploadMedia = (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       return res.status(400).json({ msg: err });
-    } else {
-      if (!req.file) {
-        return res.status(400).json({ msg: 'No file uploaded' });
-      }
+    }
 
-      const { guestId, type } = req.body;
-      const filePath = req.file.path;
+    try {
+      const media = new Media({
+        filename: req.file.filename,
+        path: req.file.path,
+        mimetype: req.file.mimetype,
+      });
 
-      try {
-        const media = new Media({
-          guestId,
-          url: filePath,
-          type,
-        });
-
-        await media.save();
-        res.status(201).json({ msg: 'Media uploaded successfully', media });
-      } catch (error) {
-        console.error(error.message);
-        res.status(500).send('Server Error');
-      }
+      await media.save();
+      res.status(201).json({ msg: 'File uploaded successfully', media });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
     }
   });
 };
@@ -65,10 +53,10 @@ exports.uploadMedia = (req, res) => {
 // Get All Media
 exports.getAllMedia = async (req, res) => {
   try {
-    const media = await Media.find(); // Adjust query if needed
-    res.status(200).json(media);
-  } catch (error) {
-    console.error('Error fetching media:', error);
-    res.status(500).json({ message: 'Server error' });
+    const media = await Media.find().select('-__v').lean();
+    res.json(media);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 };

@@ -1,11 +1,15 @@
-// controllers/eventController.js
 const Event = require('../models/Event');
 
 // Create or Update Event Details
 exports.createOrUpdateEvent = async (req, res) => {
-  try {
-    const { venue, date, timeline, details } = req.body;
+  const { venue, date, timeline, details } = req.body;
 
+  // Validate required fields
+  if (!venue || !date || !timeline || !details) {
+    return res.status(400).json({ msg: 'All fields are required' });
+  }
+
+  try {
     // Check if an event already exists
     let event = await Event.findOne();
 

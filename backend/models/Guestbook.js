@@ -1,4 +1,3 @@
-// models/Guestbook.js
 const mongoose = require('mongoose');
 
 const guestbookSchema = new mongoose.Schema({

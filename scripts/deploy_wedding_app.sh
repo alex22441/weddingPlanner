@@ -1,10 +1,10 @@
 #!/bin/bash
-
+# /home/Alexandru/Project/weedingApp/scripts
 # Variables
-FRONTEND_DIR=~/weddingApp/frontend
-BACKEND_DIR=~/weddingApp/backend
-RPI_USER=aledi
-RPI_IP=192.168.1.218  # Replace with your Raspberry Pi IP address
+FRONTEND_DIR=/home/Alexandru/Project/weddingApp/frontend
+BACKEND_DIR=/home/Alexandru/Project/weddingApp/backend
+RPI_USER=Alexandru
+RPI_IP=192.168.1.217  # Replace with your Raspberry Pi IP address
 NGINX_ROOT=/var/www/html/weddingApp
 
 # Build the Frontend
@@ -37,7 +37,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://localhost:5000; # Adjust if your backend runs on a different port
+        proxy_pass http://192.168.0.217:5000; # Adjust if your backend runs on a different port
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -87,7 +87,7 @@ ssh $RPI_USER@$RPI_IP << EOF
   sudo npm install -g pm2
 
   # Set environment variables if needed
-  export MONGODB_URI="mongodb://localhost:27017/your_db_name" # Adjust accordingly
+  export MONGODB_URI="mongodb://192.168.0.217:27017/your_db_name" # Adjust accordingly
 
   # Start backend using pm2 for better management
   pm2 start index.js --name wedding-backend -f
